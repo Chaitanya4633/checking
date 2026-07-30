@@ -1,0 +1,437 @@
+**************************
+Gosu Enhancement Code
+**************************
+
+
+Step-1: Go to gsrc folder inside that folder create a new package
+Step-2: Inside that package create a new gosu enhancement file
+Step-3: Write gosu enhancement code inside that file using getter property, setter property and methods
+
+Code:
+
+property get NextCourtesyContact(): Date{
+    var nextCourtesyDate: Date = null
+
+    if(this.LastCourtesyContact_Ext != null) {
+       nextCourtesyDate = this.LastCourtesyContact_Ext.addMonths(6)
+    }
+
+    return nextCourtesyDate
+}
+
+
+What this code does ?
+
+This getter property calculates a next courtesy contact date based on an existing date.
+If LastCourtesyContact_Ext has a value, it returns a new date six months later.
+If LastCourtesyContact_Ext is null, it safely returns null.
+The value is computed dynamically and is not stored in the database.
+
+
+
+
+*************************
+Gosu Code (Basic)
+*************************
+
+
+Step-1: Open gosu scratchpad 
+
+
+Code-1: Basic code
+
+uses trainingapp.base.QueryUtil
+
+var publicID = "ab:98"
+
+var contact = QueryUtil.findContact(publicID)
+
+if(contact != null){
+   
+   print(contact.DisplayName + " was created " + contact.CreateTime + ".")
+
+   if(contact.PrimaryAddress != null){
+      print("Primary address: " + contact.PrimaryAddress)
+   }
+}	
+
+else{
+  print("No contact found for PublicID: " + publicID)
+}
+
+
+
+What this code does:
+
+Import a helper class
+Set the ID you want to look up
+Fetch the contact by its ID
+Check if a contact was found
+If found: print basic info
+If not found: print a message
+
+
+Code-2: Using Arrays
+
+
+uses trainingapp.base.QueryUtil
+
+var publicIDs = new String[] {"98","5"}
+
+for(publicID in publicIDs){
+   
+   var contact = QueryUtil.findContact(publicID)
+   
+   if(contact != null){
+      print(contact.DisplayName)
+   }
+}
+
+
+
+
+
+
+
+
+
+
+*************************
+Gosu Rule
+*************************
+
+USES:
+
+
+CONDITION (aBContact : entity.ABContact): 
+
+  return aBContact.EmailAddress == null
+
+
+ACTION (aBContact : entity.ABContact, actions : gw.rules.Action):
+
+aBContact.reject(null, null, "EmailAddress", "Email address is recommended but not mandatory.")
+
+
+
+
+What this rule does 
+Checks if the EmailAddress is missing
+Shows a warning message on the Email field
+User can still proceed/save
+
+
+
+
+
+
+
+**************************
+GUnit Code
+**************************
+
+
+uses gw.testharness.v3.PLAssertions
+
+var a = 5
+var b = 5
+var sum = a + b
+
+PLAssertions.assertEquals(10, sum)
+
+print("Test passed: Sum is correct")
+
+
+
+
+
+
+
+
+
+******************************
+Create an Activity using Gosu
+******************************
+
+
+
+uses entity.Activity
+uses gw.api.util.DateUtil
+uses gw.transaction.Transaction
+
+function createSimpleActivity(claim: entity.Claim) : Activity {
+
+  var bundle = Transaction.getCurrent()
+
+  var act = new Activity()
+  act.Claim = claim
+  act.Subject = "Call customer to confirm address"
+  act.Description = "Customer's address looks incomplete. Please call and confirm."
+  act.Priority = Priority.TC_NORMAL
+  act.TargetDate = DateUtil.currentDate().addDays(2)
+  act.AssignedGroup = claim.AssignedGroup
+  act.AssignedUser = claim.AssignedUser
+  
+  claim.addToActivities(act)
+  
+  return act //Transaction.commit()
+}
+
+
+
+
+
+
+
+**************************
+Create an Note Using Gosu
+**************************
+
+
+
+uses entity.Note
+
+function addClaimNote(claim: entity.Claim) : Note {
+  var note = new Note()
+  note.Claim = claim
+  note.Subject = "Insured contact update"
+  note.Body = "Insured confirmed correct mailing address. No further action needed."
+  note.Confidential = false
+  note.Topic = NoteTopicType.TC_GENERAL
+  
+  claim.addToNotes(note)
+  
+  return note
+}
+
+
+
+
+
+************************
+Create a bundle
+************************
+
+
+uses gw.transaction.Transaction
+
+Transaction.runWithNewBundle(\ b -> {
+  var c = new entity.ABContact(b)
+  c.FirstName = "Test"
+  c.LastName  = "User"
+  c.save()
+  print("Created: " + c.PublicID)
+})
+
+
+
+
+
+Same code with try-catch:
+
+try{
+   Transaction.runWithNewBundle(\ b -> {
+   var c = new entity.ABContact(b)
+   c.FirstName = "Test"
+   c.LastName  = "User"
+   c.save()
+   print("Created: " + c.PublicID)
+ })
+}
+
+catch(e: Exception){
+   b.rollback()
+}
+
+
+
+
+
+
+
+
+
+***********************************************
+Gosu Code for Exception Handling
+***********************************************
+
+
+
+funtion readValue(claims: List<String>, index: int) : String {
+	
+	try{
+		print("Trying to read values...")
+		return claims[index]
+	}
+	
+	catch(e: IndexOuOfBoundException){
+		print("Invalid index: " + index)
+		return "NOT_FOUND"
+	}
+	
+	catch(e: Exception){
+		print("Some other unexcepted error occurred: " e.Message)
+		return "ERROR"
+	}
+
+	finally{
+		print("process completed")
+	}
+
+}
+
+
+var claimList = claim.ClaimList
+var value = readvalue(claimList, 100)
+print(value)
+
+
+
+
+
+
+
+
+
+********************************
+Bundle Code
+********************************
+
+
+uses gw.transaction.Transaction
+uses entity.ContactNote
+
+function CreateSimpleNote(body:String) {
+     
+      Transaction.runWithNewBundle(\b ->{
+	   
+	   var note = new.ContactNote()
+           note = b.add(note)
+	   note.Body = body
+           note.ContactNoteType = TC_General
+      }, "SU")
+}
+
+
+
+With try catch:
+
+
+uses gw.transaction.Transaction
+uses entity.ContactNote
+
+try{
+	
+   function CreateSimpleNote(body:String) {
+     
+      Transaction.runWithNewBundle(\b ->{
+	   
+	   var note = new.ContactNote()
+           note = b.add(note)
+	   note.Body = body
+           note.ContactNoteType = TC_General
+       }, "SU")
+    }
+}
+
+
+catch(e: Exception){
+
+      b.rollback()
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+***********************************************************************************
+Write a method to create a incident using claimnumber field from the claim entity
+***********************************************************************************
+
+
+
+uses gw.transaction.Transaction
+uses gw.api.database.Query
+
+function createPropertyIncident(claimNumber : String) : entity.PropertyIncident {
+  var out : entity.PropertyIncident = null
+
+  Transaction.runWithNewBundle(\ b -> {
+    var claim = Query.make(entity.Claim)
+      .compare("ClaimNumber", Equals, claimNumber)
+      .select().atMostOneRow()
+
+    if (claim == null) {
+      throw new IllegalArgumentException("No claim found for " + claimNumber)
+    }
+
+    var pin = new entity.PropertyIncident(b)
+    pin.Claim = claim
+    pin.Description = "Property incident (Fire) created via script"
+    pin.IncidentDate = gw.api.util.DateUtil.currentDate()
+    pin.PropertyDescription = "Single-family dwelling"
+    pin.LossCause = typekey.LossCause.FIRE  // adjust if your typelist differs
+
+    var addr = new entity.Address(b)
+    addr.AddressLine1 = "221B Baker Street"
+    addr.City = "Kolkata"
+    addr.State = typekey.State.WB
+    addr.PostalCode = "700002"
+    b.add(addr)
+    pin.LossLocation = addr
+
+    b.add(pin)
+    out = pin
+  })
+
+  return out
+}
+
+
+
+
+
+*******************************************************************************
+ How will you count number of claims in a policy using for loop
+*******************************************************************************
+
+
+function countClaimsForPolicy(policyNumber : String) : int {
+
+  // Query Claims by Policy Number
+  var q = Query.make(Claim)
+  q.compare("PolicyNumber", Equals, policyNumber)
+
+  // For loop to count claims
+  var it = claimList.iterator()
+  var count = 0
+  while (it.hasNext()) {
+     var claim = it.next()
+     count += 1
+  }
+  return count
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

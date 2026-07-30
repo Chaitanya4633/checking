@@ -1,0 +1,64 @@
+condition:
+
+return coverageType==TC_PARideshare and RideshareAppON_Ext == YesNo.TC_Yes
+
+Rule actions
+
+createExpsore().coverageSubtype==TC_RentalReimbursement
+
+
+
+
+var newMap = new HashMap<String, int>()
+newMap.put("Claim",1)
+newMap.put("Incident",2)
+
+newMap.remove(1)
+
+
+
+
+
+var newList = new List<String>()
+newList.add()
+
+newList.remove()
+
+
+
+
+
+uses gw.api.database.Query
+
+function getExposures(claimNumber: String) : entity.Claim {
+
+ var claim = Query.make(entity.claim).compare("ClaimNumber", Equals, claimnumber).select()
+
+ var exposure = claim.Exposure
+
+ if(exposure == null){
+	print("No exposures on claim)
+
+
+ for(i in exposure){
+  
+  print("Exposures names are :"+ exposure.DisplayName)
+ }
+
+}
+
+
+
+
+
+<workqueue>
+ 	workqueueClass="MFRP.workqueue.Overdueactivities"
+	progressInterval = "30000"
+	
+	<worker instances="1"/>
+</workqueue>
+
+
+
+
+

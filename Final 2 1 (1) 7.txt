@@ -1,0 +1,814 @@
+1) Provide PCF heirarchy
+
+A PCF hierarchy starts with a Page, which loads a PanelSet, which contains Panels. Panels use InputSets and ListViews, and InputSets contain the actual input widgets.
+
+Page
+ ├── LocationBar
+ ├── TabBar
+ ├── Toolbar
+ ├── Sidebar
+ └── PanelSet
+       ├── Panel
+       │     ├── InputSet
+       │     │      ├── Input Widgets
+       │     │      └── Display Widgets
+       │     └── ListView
+       │            ├── LV Columns
+       │            └── Row Actions
+       └── Additional Panels / Navigation Panels
+
+
+2) How do you add an index. Why would you add an index to an entity.
+
+We add an index to improve read performance for frequently accessed fields. Indexes allow the database to locate rows faster without scanning the entire table, which improves the speed of searches, joins, and lookups.
+
+
+3) Can you name some delegate entities.How do you create a new delegate entity.
+
+A delegate is a virtual entity consisting of database fields, or methods, or both that can be reused by multiple entities
+Examples of delegate entities in Claim Center: AnswerDelegate.eti, PercentMetricDelegate.eti, MoneyMetricDelegate.eti
+
+
+4) What is the purpose of loadable properties.
+Loadable properties improve performance by delaying the loading of large or rarely used entity fields until they are actually accessed. This reduces initial query size, memory usage, and speeds up screen load times.
+
+
+5) What is purpose of PostOnChange in a PCF file.
+postOnChange is a PCF widget property that tells Guidewire to send the updated value back to the server immediately whenever the user changes a field — without waiting for a full page submit.
+Example:
+Showing/hiding fields dynamically
+Dropdown A controls Dropdown B
+
+
+
+6) Explain the Full Claim Lifecycle
+
+	1. FNOL (First Notice of Loss)
+		Find policy or create a new unverified policy
+		Basic details
+		Loss Details
+		Add seervices
+		Assignment
+	2. Coverage Verification
+	3. Segmentation
+	4. Assignment
+	5. Investigation
+	6. Exposure Creation
+	7. Reserve Setup
+	8. Payments
+	9. Recovery
+	10. Claim Closure
+
+
+
+7) Is it possible to open a closed claim. In what scenario do we do that.
+
+Yes, it is possible to reopen a closed claim.
+New information is discovered
+Supplemental payments are required
+Wrong closure (human error)
+Litigation or legal action starts after closure
+
+
+
+
+8) What is Cost Category ? 
+
+A Cost Category classifies the type of cost or payment within a claim exposure.
+It tells ClaimCenter what kind of financial transaction is being made.
+Example:
+Collision Damage
+Towing
+Rental Reimbursement
+Medical Expenses
+Bodily Injury
+Property Damage
+
+
+9) Explain about Policy lifecycle as well what are the policy transactions.
+
+Policy Life Cycle:
+Submission
+Policy Issuance
+Policy Change / Mid‑Term Change
+Renewal
+Cancellation
+Rewrite / Rewrite New Account
+Reinstatement
+
+Policy Transactions:
+Submission (New Business)
+Policy Change
+Cancellation
+Reinstatement
+Renewal
+Rewrite
+Rewrite New Account
+
+
+10) What is the difference between Bind and Issue.
+
+Bind:
+Legal commitment to provide insurance.
+UW approves the quote.
+Premium and terms become final.
+Policy is not active yet; coverage does not start.
+
+Issue:
+After bind, the system generates the actual policy.
+Coverage starts at the effective date.
+Policy number is assigned (if not earlier).
+
+Bind commits the insurer to issue the policy; Issue officially activates the policy and coverage.
+
+
+11) What is declaration page ?
+
+The declaration page is the official summary of what the policy covers, who it covers, and at what cost.
+
+
+
+12) Can you define coverage, coverage terms ,coverages periods and coverage options in the PC.
+
+Coverage:
+A protection provided by the policy.
+Examples:
+Collision Coverage
+Property Coverage
+Liability Coverage
+
+
+Coverage Term
+A configurable value inside a coverage.
+Examples:
+Deductible (₹5000, ₹10000)
+Limit (₹1 lakh, ₹5 lakh)
+
+
+Coverage Period:
+Defines when the coverage is effective.
+
+
+Coverage Options:
+Pre-defined choices for coverage terms.
+Examples:
+Deductible options: 250, 500, 1000
+Liability options: 50/100, 100/300, etc.
+
+
+13) Explain non renewable policy ?
+A non‑renewable policy is a policy that will not be renewed at the next renewal cycle.
+This happens when:
+Risk is too high
+Repeated claims / fraud suspicion
+
+
+14) Do you know policy period graph.
+The Policy Period Graph is a data model representation of all the objects related to a policy period.
+It includes:
+PolicyPeriod
+PolicyLine(s)
+Coverages
+CoverageTerms
+Modifiers
+Risk Items (Vehicles, Properties, Locations)
+UW Issues
+Forms
+Conditions & Exclusions
+Job data (submission, renewal, etc.)
+Term & Version info
+
+
+Why is it called “graph”?
+Because PolicyCenter uses a graph-based object model, not a flat relational model.
+
+
+
+
+15) What is Policy Period ?
+A Policy Period is the time span during which an insurance policy provides coverage.
+It has a start date (Effective Date) and an end date (Expiration Date) and represents one term of the policy.
+
+
+
+16) Difference between Policy id and Policy number ?
+Policy number is Bussiness data shared with customers and Policy id is for technical field
+
+
+
+17) What is current bundle. When do we use current and new bundle ?
+
+Current bundle:
+Every server-side action (PCF action, rule execution, plugin call, etc.) already runs inside a current bundle.
+When you modify data on the screen or update an entity during a job: You always use the current bundle.
+
+New bundle:
+You create a new bundle only when you need an independent transaction, separate from the current work.
+Example: Background processing inside a batch process.
+
+
+18) Situation - What if we add a new data field in a pcf file and we are collecting the new data, so do we create a new bundle or a current bundle to commit the data ?
+We use the Current Bundle.
+Reason:
+The data entered through the PCF belongs to the current job (Submission, Change, etc.)
+Guidewire automatically binds UI updates to the current bundle
+
+
+
+
+19) How will you create a new batch process with its steps in studio.
+A custom batch process is implemented by a Gosu class called by the ProcessesPlugin
+Step 1: Add BatchProcessType typecode
+Step 2: Create a batch process class
+Step 3a: Modify ProcessesPlugin class ( for CC and PC)
+Step 3b: Create the IProcessesPlugin.gwp
+Step 3c: Implement the IProcessesPlugin
+Step 4: Configure scheduler-config.xml (cron schedule)
+Step 5: Deploy the implementation
+
+
+
+20) Can you explain the messaging framework in guidewire.
+Guidewire Messaging Framework is used for asynchronous integration with external systems.
+
+1. Event
+A business event triggered by entity changes.
+Example: Policy bound, claim created, check issued.
+
+2. Event Fired
+When a monitored entity changes (Insert/Update/Delete), Guidewire “fires” an event.
+
+3. Message
+A row created in the message table.
+Contains event name + entity key + XML/JSON payload.
+
+4. Destination
+Configuration that defines:
+   Where to send the message
+   What retry rules apply
+   Which plugin handles the message
+
+5. Transport
+How the message is delivered: SOAP and REST
+
+6. Messaging Plugins
+Example: IMessagingPlugin
+Converts entity data → XML/JSON → sends to target system.
+
+
+7. Acknowledge / Retry / Error Handling
+If the external system responds: Ack
+If no response or error
+
+
+
+
+21) What are Safe-Order Messages?
+Safe-ordering ensures messages are delivered to external systems in the correct business order, even if system is busy or retrying.
+
+
+
+22) Can you show a code snippet of exception handling ?
+
+try {
+    var x = 10
+    var y = 0
+    var result = x / y      // This will cause an exception
+    print("Result: " + result)
+} 
+catch (e : ArithmeticException) {
+    print("Cannot divide by zero: " + e.Message)
+} 
+catch (e : Exception) {
+    print("Some unexpected error occurred: " + e.Message)
+} 
+finally {
+    print("Cleanup complete. This block always executes.")
+}
+
+
+
+
+23) Pre renewal direction and Process of pre renewal direction
+Pre‑renewal direction is created before renewal to guide how the renewal should proceed—like approve, review, restrict, surcharge or non‑renew.
+
+
+
+24) Underwriting issue, Underwriting issue key and Underwriting issue id
+
+An underwriting issue is a rule‑triggered flag raised during submission, change, or renewal when policy data does not meet underwriting guidelines.
+
+UW Issue ID is system‑generated
+
+UW Issue Key is business-defined and used to identify the issue type in rules.
+
+
+
+25) Various process of rating
+
+Rating takes risk inputs → looks up rate tables → applies rate routines → applies modifiers → calculates premium → returns final rate to UI.
+
+
+
+26) Relationship between policy terms and period
+In entity level how they are related
+Policy terms is array??
+
+A PolicyTerm has one‑to‑many relationship with PolicyPeriod.
+PolicyPeriod has a foreign key back to PolicyTerm.
+Yes — PolicyTerm → HAS AN ARRAY of PolicyPeriods.
+
+“One PolicyTerm can have multiple PolicyPeriods.”
+But:
+“Each PolicyPeriod belongs to only ONE PolicyTerm.”
+
+
+27) Financial data model
+
+Claim → Exposure → Transactions
+This is the heart of Guidewire financials.
+Claim
+ └── Exposure
+        └── TransactionSet
+              ├── Reserve
+              └── FinancialTransaction (Check, Payment, Recovery)
+
+
+28) New role in studio
+ContactRole.ttx and UserRole.ttx
+
+
+
+29) Loadble property
+A loadable property is a field that Guidewire loads lazily (on‑demand) instead of loading it with the entity.
+
+
+
+30) Difference between claim id and claim number
+
+Claim Number is a business-readable identifier shown to users, while Claim ID is the system-generated internal primary key stored in the DB. 
+
+
+
+31) Script parameter
+
+A Script Parameter is a configurable value stored in XML and accessed through Gosu to avoid hardcoding.
+
+
+
+32) What are workflows and What are steps of workflows ?
+
+A Workflow in Guidewire is an automated business process that runs step‑by‑step to complete a sequence of tasks without requiring user intervention.
+
+Workflow Execution Flow
+Here’s how workflows normally run:
+Create Workflow →
+Start Step →
+Automated Step →
+Activity Step →
+Wait Step / Branch Step →
+More Steps →
+End Step →
+Workflow Closed
+
+
+
+33) Can u explain the recovery process ?
+
+
+
+
+34) What is datatype of writable bundle?
+
+gw.transaction.Bundle
+
+
+
+
+35) How do you perform rewrite transaction ?
+
+1.	Start from the Canceled or Expired Policy
+2.	Select the Rewrite Type
+3.	Enter Policy Info & Effective Date
+4.	Review and Modify Risk Information
+5.	Rating & Quote Generation
+6.	Underwriting Review (If Needed)
+7.	Bind the Rewrite
+8.	Issue the Policy
+
+
+
+36) How to trigger uw issue using gosu codes?
+
+
+function raiseUnderAgeIssue(policyPeriod : PolicyPeriod, driver : Driver) {
+  if (driver.Age >= 18) return
+
+  // 1) Check if an open UW issue with same key already exists
+  var existing = policyPeriod.UWIssues
+    .where(\ i -> i.IssueKey == "DriverUnderAge" and i.Status == UWIssueStatus.TC_OPEN)
+    .first()
+  if (existing != null) return
+
+  // 2) Create new issue in the current (writable) bundle
+  var b = Transaction.getCurrent()  // type: gw.transaction.Bundle
+  var issue = new UWIssue(b)
+
+  issue.PolicyPeriod     = policyPeriod
+  issue.IssueKey         = "DriverUnderAge"                // Business key
+  issue.UWIssueType      = UWIssueType.TC_RULE             // Or other appropriate type
+  issue.Severity         = UWIssueSeverity.TC_BLOCKING     // BLOCKING / WARNING
+  issue.Status           = UWIssueStatus.TC_OPEN
+  issue.OwnerRole        = UWIssueOwnerRole.TC_UNDERWRITER
+  issue.ShortDescription = "Driver younger than 18"
+  issue.LongDescription  = "Minimum allowed driver age is 18; please review or decline."
+
+  policyPeriod.addToUWIssues(issue)
+
+  // 3) (Usually the framework commits; else explicitly:)
+  // Transaction.commit()
+}
+
+
+
+
+37) Can u explain the recovery process ?
+
+Recovery is the process by which an insurer receives money back after paying a claim. ClaimCenter supports Recovery Reserves (planned income) and Recoveries (actual income), which reduce the net incurred loss. Recoveries follow a financial lifecycle similar to payments but in reverse.
+
+Typical recovery sources:
+Subrogation
+Deductible reimbursement
+Salvage proceeds
+Reinsurance recoveries
+
+
+
+
+38) Steps of Rating Process ?
+Step 1 — Gather Rating Inputs
+Step 2 — Select Active Rate Books
+Step 3 — Run Rate Routines
+Step 4 — Rate Table Lookup
+Step 5 — Apply Modifiers
+Step 6 — Apply Fees & Taxes
+Step 7 — Calculate Transaction Premium
+Step 8 — Return Final Premium to UI
+
+
+39) How to implement Rating Process in GW ?
+Step 1: Configure Product Model
+Step 2: Create Rate Books
+Step 3: Create Rate Tables
+Step 4: Create Rate Routines
+Step 5: Associate Rate Routines with Line of Business
+Step 6: Test Rating Using "Rate Preview"
+Step 7: Deploy & Activate Rate Books
+
+
+40) Where to configure Rating Process ?
+/configuration/rating
+/configuration/productmodel
+Rating Worksheets
+PCF summary screens
+Optional Gosu in gw.rating
+
+
+
+41) What is Product Designer ?
+
+Product Designer (PD) is Guidewire’s web‑based configuration tool used to design and manage the Product Model, without needing code changes in Studio.
+It is part of Advanced Product Designer (APD) and is used for:
+Lines of Business (PolicyLines)
+Coverages
+Coverage Terms (limits, deductibles, options)
+Coverables & Risk Items
+
+
+
+
+42) Steps to Add a New Coverage
+
+Open Product Designer
+Select LOB and level (Line / Coverable / RiskItem)
+Click Add Coverage
+Enter coverage details
+Add coverage terms
+Configure availability/eligibility rules
+Attach forms if needed
+Assign charge pattern and rating routine
+Version with effective date
+Publish → Export → Import into Studio
+
+
+
+
+43) What are the other columns we can add to an entity
+
+Foreign Key Column
+Array Column
+Typekey Column
+Bit Columns / Boolean Columns
+
+
+
+
+44) Major entities in PC
+PolicyPeriod
+PolicyTerm
+PolicyLine
+Account
+Job
+PolicyTransaction
+
+
+45) Relationship between Policy and PolicyLine ?
+ONE‑TO‑ONE
+Each PolicyPeriod has exactly ONE PolicyLine
+
+
+
+46) How will u create many-to-many relationship between entities ?
+Guidewire does not allow direct many‑to‑many relationships. Instead, we create a new join entity containing foreign keys to both entities. Each of the original entities has an array to the join entity. This creates an effective many‑to‑many relationship.
+
+
+
+
+47) Purpose of Notes in Claims and Can u edit/modify Notes ?
+
+Notes in ClaimCenter document claim information, communication events, investigation details, and internal collaboration. They serve as a permanent audit trail for regulatory and legal compliance.
+
+
+
+
+48) Write an EventFired rule
+
+USES:
+uses gw.api.locale.DisplayKey
+
+Condition(messageContext : entity.MessageContext) 
+return messageContext.DestID == 80
+
+Action(messageContext : entity.MessageContext, actions : gw.rules.Action)
+var workItem = messageContext.Root as ContactAutoSyncWorkItem
+messageContext.createMessage(DisplayKey.get("Rules.EventFired.AddressBookUID", 
+                              messageContext.EventName, workItem.AddressBookUID))
+
+
+
+49) Explain the Full Claim Lifecycle .
+FNOL (First Notice of Loss)
+Assign Claim
+Coverage Verification
+Exposure Creation
+Investigation
+Reserving
+Payments / Recoveries / Subrogation
+Closure of Exposures
+Claim Closure
+
+
+
+
+50) How to Configure a Workflow in Guidewire ?
+
+Step 1 — Create a Workflow XML
+Step 2 — Define Workflow Steps
+Step 3 — Add Logic Using Gosu
+Step 4 — Configure Transitions
+Step 5 — Define Timers (Timeouts)
+Step 6 — Deploy Workflow
+Step 7 — Trigger Workflow
+
+
+
+51) Various Steps of a Workflow ?
+
+go() Method:
+Moves workflow from the current step to the next step immediately based on:
+User action
+Gosu logic
+Conditional checks
+
+Code:
+if (claim.Severity == "High") {
+    go("EscalationStep")
+} else {
+    go("ReviewStep")
+}
+
+
+timeout() Method:
+Called automatically when the step’s timeout interval expires.
+
+
+
+
+
+52) Steps involved in creating a Message Queue
+Step-1: Define the Event(s)
+Step-2: Create the Destination
+Step-3: Wire Events → Destination
+Step-4: Implement the Messaging Plugin
+Step-5: Create an Event-Firing Rule
+Step-6: Verify Scheduler & Destinations
+Step-7: Test
+
+
+
+
+53) What is the content of message-config.xml
+Events, Destinations and Mapping
+
+
+
+54) What is the entity relationship between job and policy period entity
+One Job → can have multiple PolicyPeriods (e.g., Renewal creates the new period).
+PolicyPeriod → belongs to a Single Job.
+Relationship:
+Job 1 --- * PolicyPeriod
+
+
+
+55) How will u start a job in PC
+
+In UI:
+From the Account File
+From an Existing Policy
+From Desktop Menu
+
+In Studio:
+Using the Renewal Process (Batch)
+The Renewal Plugin (IRenewalPlugin) starts Renewal jobs automatically.
+
+
+
+56) Example of scenario when a Job can have multiple PolicyPeriods
+
+Scenario 1: Renewal Job
+A Renewal job always has multiple PolicyPeriods:
+
+Base Period: Current in-force period
+New Period: Upcoming renewal period (system creates it automatically)
+
+
+Scenario 2: Rewrite or Rewrite-New-Period Job
+Rewrite jobs often keep the old period and create a new corrected one.
+
+Example:
+A policy was cancelled incorrectly.
+You perform a Rewrite-New-Period.
+System copies last bound period into a new PolicyPeriod.
+
+Thus, the job contains:
+Original cancelled policy period
+New rewritten period
+
+
+
+
+
+
+
+57) NonRenewable Policy in PC
+
+A Non‑Renewable policy is a policy that will not be offered a renewal at the end of its current term.
+
+
+
+
+58) Steps for UW to mark that a policy can't be NonRenewable
+
+Step 1: Open the Policy
+Step 2: Navigate to the Renewal Details
+Step 3: Mark Policy as “Do Not Renew”
+Step 4: Select the Reason for Non‑Renewal
+Step 5: Add Underwriter Notes (Optional)
+Step 6: Save & Submit
+
+
+
+
+
+59) Code for fetching an exposure using claim number of a claim using an Iterator(loop)- code snippet for iterating a collection- He meant to ask that how will you index a variable in the for loop
+
+function printExposuresWithIterator(claimNumber : String) {
+  var claim = Query.make(Claim)
+    .compare("ClaimNumber", Equals, claimNumber)
+    .select().first()
+
+  if (claim == null) {
+    print("No claim found for claim number: " + claimNumber)
+    return
+  }
+
+  var exposures = claim.Exposures
+  if (exposures == null or exposures.Empty) {
+    print("No exposures on claim " + claimNumber)
+    return
+  }
+
+  var it = exposures.iterator()
+  var idx = 0
+  while (it.hasNext()) {
+    var exp = it.next()
+    print("Index=" + idx
+      + ", ExposureID=" + exp.ID
+      + ", Coverage=" + exp.Coverage?.PatternCode
+      + ", ReserveStatus=" + exp.ReserveLineSet?.Status?.Code)
+    idx += 1
+  }
+}
+
+
+
+
+
+60) How will you count number of claims in a policy using for loop
+
+function countClaimsForPolicy(policyNumber : String) : int {
+
+  // Query Claims by Policy Number
+  var q = Query.make(Claim)
+  q.compare("PolicyNumber", Equals, policyNumber)
+
+  // For loop to count claims
+  var it = claimList.iterator()
+  var count = 0
+  while (it.hasNext()) {
+     var claim = it.next()
+     count += 1
+  }
+  return count
+}
+
+
+
+
+
+61) Policy period: policy line entity relationship
+
+PolicyPeriod → PolicyLine = One‑to‑Many (1:N)
+A single PolicyPeriod can contain multiple PolicyLines
+
+
+
+
+62) Why we use popup instead of screen?
+
+We use a pop‑up instead of a full screen when the user needs to perform a small, focused action without leaving the current workflow.
+
+
+
+
+63) Why we do NOT call commit inside runWithNewBundle()?
+
+We don’t commit inside runWithNewBundle() because Guidewire automatically commits the bundle if the callback runs successfully. If an exception occurs, the framework rolls back. Manually committing would interfere with Guidewire’s transaction management.
+
+
+
+64) Subtype and Supertype
+
+Supertype
+A supertype is a parent entity that defines:
+common fields
+common behavior
+common database table
+
+Subtype
+A subtype is a specialized child of the supertype that:
+inherits all fields from the parent
+defines extra fields
+adds specific behavior
+is stored in the same database table
+
+
+
+
+65) Location and Location groups 
+
+Location:
+A location is a PCF element that a user can navigate to
+Define how user navigates from one UI to the next UI
+
+Location group:
+A location group is a collection of pages used 
+to view or modify data
+
+
+
+66) What is Job Wizard ?
+
+A job wizard is a location with one or more screens, in which only one screen is active at a time
+
+
+
+67) What is Product Model ?
+
+The Product Model in PolicyCenter is the configuration framework that defines an insurance product—its lines, coverables, coverages, coverage terms, conditions, exclusions, modifiers, question sets, and availability/eligibility rules. It determines what data is collected during submission and how rating and underwriting behave. Essentially, it is the blueprint for how an insurance product works inside PolicyCenter.
+
+
+
+
+68) What is Claim Snapshot ?
+A Claim Snapshot is a read‑only, point‑in‑time copy of important claim information that captures how the claim looked at a specific moment.
